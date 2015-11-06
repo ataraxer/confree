@@ -7,13 +7,12 @@ object Main extends App {
   val config = new AppConfig(ConfigFactory.load.getConfig("app"))
 
   println(config.foo)
-  println(config.foo)
-  println(config.foobarbaz)
+  println(config.foobar)
   config.put("foo", "Wow!")
+  println(config.bar)
+  println(config.foobar)
+  config.put("bar", "1337")
   println(config.foo)
-  println(config.foobarbaz)
-  config.put("baz", "1337")
-  println(config.foo)
-  println(config.foobarbaz)
+  println(config.foobar)
 }
 

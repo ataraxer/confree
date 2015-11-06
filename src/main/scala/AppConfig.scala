@@ -4,7 +4,7 @@ import com.typesafe.config.{Config, ConfigFactory, ConfigUtil}
 
 
 class AppConfig(config: Config) {
-  private implicit val cache = new ConfigAwareCache(config)
+  private implicit val cache = new UltimateCache(config)
 
   def put(key: String, value: String) = {
     val quotedKey = ConfigUtil.quoteString(key)
@@ -13,26 +13,30 @@ class AppConfig(config: Config) {
     cache.mergeConfig(wrapped)
   }
 
-  def get(setting: Setting): setting.Result = setting.cached
-
-  object settings {
-    val foo = Setting[String]("foo")
-    val bar = Setting[Int]("bar")
-    val foobar = for (foo <- foo; bar <- bar) yield f"$foo: $bar"
-
-    val foobarbaz = for {
-      foobar <- foobar
-      bar <- bar
-      baz <- Setting[Int]("baz")
-    } yield {
-      val value = bar + baz
-      f"$foobar and $value"
-    }
+  object settings extends {
+    implicit val registry: Registry = cache
+  } with AppSettings {
+    println("Finished")
+    println()
   }
 
-  def foobarbaz = get(settings.foobarbaz)
-  def foobar = get(settings.foobar)
-  def foo = get(settings.foo)
-  def bar = get(settings.bar)
+  def foobar = settings.foobar.get
+  def foo = settings.foo.get
+  def bar = settings.bar.get
+}
+
+
+trait AppSettings {
+  implicit val registry: Registry
+
+  val foo = Setting[String]("foo")
+  val bar = Setting[Int]("bar")
+
+  val foobar = for {
+    foo <- foo
+    bar <- bar
+  } yield {
+    f"$foo: $bar"
+  }
 }
 
